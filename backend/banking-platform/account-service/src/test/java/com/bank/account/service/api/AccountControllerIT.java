@@ -2,7 +2,6 @@ package com.bank.account.service.api;
 
 import com.bank.account.domain.AccountType;
 import com.bank.sharedkernel.domain.Currency;
-import com.bank.account.service.MockRepositoryConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 @AutoConfigureMockMvc
-@Import(MockRepositoryConfig.class)
 public class AccountControllerIT {
 
     @Autowired
@@ -65,7 +63,7 @@ public class AccountControllerIT {
                 .andExpect(status().isBadRequest());
     }
 
-    @Autowired
+    @org.springframework.boot.test.mock.mockito.MockBean
     private com.bank.sharedkernel.domain.EventSourcedRepository<com.bank.account.domain.AccountAggregate> repository;
 
     @org.springframework.boot.test.mock.mockito.MockBean
