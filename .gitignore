@@ -1,0 +1,70 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+# If using JBA (JetBrains Academy)
+.course-ignore
+
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+config.plist
+*.swp
+
+# Docker
+.docker/
+# Volume data (if any mapped to host)
+docker-data/
+eventstore-data/
+postgres-data/
+
+# Logs and temporary files
+*.log
+startup.log
+dump.rdb
+
+# Antigravity / Gemini logs (optional)
+.gemini/
+.agents/
+brain/
+
+# Local configuration
+.env
+.env.local
+*.properties.local
+
+# Frontend (if using Node)
+node_modules/
+dist/
+.npm/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.eslintcache
+.stylelintcache
+.parcel-cache
+.next/
+.nuxt/
+.cache/
