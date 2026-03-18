@@ -45,7 +45,7 @@ public class AccountController {
 
     @PostMapping("/accounts/{accountId}/freeze")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void freezeAccount(@PathVariable String accountId,
+    public void freezeAccount(@PathVariable("accountId") String accountId,
                               @Valid @RequestBody FreezeAccountRequest request,
                               @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
                               @RequestHeader(value = "X-Causation-ID", required = false) String causationId) {
@@ -61,7 +61,7 @@ public class AccountController {
 
     @PostMapping("/accounts/{accountId}/unfreeze")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void unfreezeAccount(@PathVariable String accountId,
+    public void unfreezeAccount(@PathVariable("accountId") String accountId,
                                 @Valid @RequestBody UnfreezeAccountRequest request,
                                 @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
                                 @RequestHeader(value = "X-Causation-ID", required = false) String causationId) {
@@ -77,7 +77,7 @@ public class AccountController {
 
     @PostMapping("/accounts/{accountId}/close")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void closeAccount(@PathVariable String accountId,
+    public void closeAccount(@PathVariable("accountId") String accountId,
                              @Valid @RequestBody CloseAccountRequest request,
                              @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
                              @RequestHeader(value = "X-Causation-ID", required = false) String causationId) {
@@ -92,12 +92,12 @@ public class AccountController {
     }
 
     @GetMapping("/accounts/{accountId}")
-    public AccountResponse getAccount(@PathVariable String accountId) {
+    public AccountResponse getAccount(@PathVariable("accountId") String accountId) {
         return AccountResponse.from(queryService.getAccount(accountId));
     }
 
     @GetMapping("/customers/{customerId}/accounts")
-    public AccountListResponse getAccountsForCustomer(@PathVariable String customerId) {
+    public AccountListResponse getAccountsForCustomer(@PathVariable("customerId") String customerId) {
         List<AccountResponse> accounts = queryService.getAccountsForCustomer(customerId)
                 .stream()
                 .map(AccountResponse::from)

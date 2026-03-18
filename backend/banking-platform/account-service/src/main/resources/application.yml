@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/banking_read
+    url: jdbc:postgresql://localhost:5432/banking_read?stringtype=unspecified
     username: banking
     password: banking
   jpa:
@@ -54,3 +54,7 @@ management:
     health:
       probes:
         enabled: true
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.bank: DEBUG

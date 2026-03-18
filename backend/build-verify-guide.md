@@ -68,6 +68,69 @@ docker exec postgres psql -U banking -d banking_read -c "\dt"
 ```
 Expected tables: `account_read_model`, `outbox_messages`.
 
+### 4.5 API Testing
+With the `account-service` running, you can test the REST APIs. Note that security validation is currently bypassed for `/api/v1/accounts/**` to facilitate local testing.
+
+**1. Open a New Account:**
+```bash
+curl -X POST http://localhost:8081/api/v1/accounts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "cust-1",
+    "type": "SAVINGS",
+    "currency": "USD",
+    "productCode": "SAV-001"
+  }'
+```
+Expected response: `201 Created` with JSON containing the new `accountId` (e.g., `{"accountId":"..."}`).
+
+**2. Get Account Details:**
+*(Replace `{accountId}` with the ID returned from the previous step)*
+```bash
+curl -X GET http://localhost:8081/api/v1/accounts/{accountId}
+```
+
+**3. Freeze an Account:**
+```bash
+curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/freeze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Suspicious activity detected"
+  }'
+```
+Expected response: `202 Accepted`
+
+**4. Unfreeze an Account:**
+```bash
+curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/unfreeze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Identity verified"
+  }'
+```
+Expected response: `202 Accepted`
+
+**5. Close an Account:**
+```bash
+curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/close \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Customer request"
+  }'
+```
+Expected response: `202 Accepted`
+
+**6. List Accounts for Customer:**
+```bash
+curl -X GET http://localhost:8081/api/v1/customers/cust-1/accounts
+```
+
+**7. Test Integration Tests:**
+The repository includes integration tests utilizing Testcontainers and mocked repositories to ensure correct behavior:
+```bash
+mvn test -pl account-service -Dtest=AccountControllerIT
+```
+
 ## 5. Troubleshooting & Common Issues
 
 ### 5.1 Port 5432 Conflict
