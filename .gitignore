@@ -8,6 +8,8 @@ target/
 *.tar.gz
 *.rar
 *.log
+*.tools
+*.m2
 
 # IntelliJ IDEA
 .idea/

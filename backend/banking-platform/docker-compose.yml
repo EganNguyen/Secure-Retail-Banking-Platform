@@ -1,31 +1,31 @@
 services:
-  # eventstore:
-  #   image: eventstore/eventstore:24.2.0
-  #   platform: linux/amd64
-  #   container_name: eventstore
-  #   environment:
-  #     - EVENTSTORE_INSECURE=true
-  #     - EVENTSTORE_RUN_PROJECTIONS=All
-  #     - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-  #   ports:
-  #     - "2113:2113"
-  #     - "1113:1113"
-  #   volumes:
-  #     - eventstore-data:/var/lib/eventstore
-
   eventstore:
-    image: eventstore/eventstore:24.10.7-alpha-arm64v8
+    image: eventstore/eventstore:24.2.0
+    platform: linux/amd64
     container_name: eventstore
     environment:
       - EVENTSTORE_INSECURE=true
-      - EVENTSTORE_EXT_IP=0.0.0.0
-      - EVENTSTORE_HTTP_PORT=2113
       - EVENTSTORE_RUN_PROJECTIONS=All
       - EVENTSTORE_START_STANDARD_PROJECTIONS=true
     ports:
       - "2113:2113"
+      - "1113:1113"
     volumes:
       - eventstore-data:/var/lib/eventstore
+
+  # eventstore:
+  #   image: eventstore/eventstore:24.10.7-alpha-arm64v8
+  #   container_name: eventstore
+  #   environment:
+  #     - EVENTSTORE_INSECURE=true
+  #     - EVENTSTORE_EXT_IP=0.0.0.0
+  #     - EVENTSTORE_HTTP_PORT=2113
+  #     - EVENTSTORE_RUN_PROJECTIONS=All
+  #     - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+  #   ports:
+  #     - "2113:2113"
+  #   volumes:
+  #     - eventstore-data:/var/lib/eventstore
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
@@ -79,6 +79,31 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     ports:
       - "8080:8080"
+
+  account-service:
+    build:
+      context: .
+      dockerfile: account-service/Dockerfile
+    container_name: account-service
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - eventstore
+      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banking_read?stringtype=unspecified
+      SPRING_DATASOURCE_USERNAME: banking
+      SPRING_DATASOURCE_PASSWORD: banking
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EVENTSTORE_CONNECTION_STRING: esdb://eventstore:2113?tls=false
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/retail
+      JAVA_TOOL_OPTIONS: -Duser.timezone=UTC
+      TZ: UTC
+    ports:
+      - "8081:8081"
 
 volumes:
   eventstore-data:

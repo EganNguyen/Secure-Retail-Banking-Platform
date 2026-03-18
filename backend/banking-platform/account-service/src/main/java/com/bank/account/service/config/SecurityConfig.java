@@ -16,11 +16,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/health/**").permitAll()
-                        .requestMatchers("/api/v1/accounts/**").permitAll() // comment it for security - just bypass for
-                                                                            // testing
-                        .requestMatchers("/api/v1/customers/**").permitAll() // just bypass for testing
-                        .anyRequest().authenticated());
+                        .anyRequest().permitAll());
         // .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         // open jwt - just bypass for testing
 

@@ -16,6 +16,18 @@ Ensure the following tools are installed:
 > export PATH=$JAVA_HOME/bin:$PATH
 > ```
 
+> On window,
+Download Maven https://maven.apache.org/download.cgi
+Binary zip archive (apache-maven-3.x.x-bin.zip)
+Unzip to a clean location, for example: C:\Program Files\Apache\Maven
+Set Environment Variables
+Edit the system environment variables
+New System Variable
+MAVEN_HOME = C:\Program Files\Apache\Maven
+Edit Path
+Add:
+C:\Program Files\Apache\Maven\bin
+
 ## 2. Infrastructure Setup
 
 Start the local development environment using Docker Compose:
