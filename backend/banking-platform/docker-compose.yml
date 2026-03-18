@@ -15,7 +15,7 @@ services:
 
   # eventstore for macos m2 pro
   eventstore:
-    image: eventstore/eventstore:24.10.7-alpha-arm64v8
+    image: docker.eventstore.com/eventstore/eventstoredb-ee:24.10
     container_name: eventstore
     environment:
       - EVENTSTORE_INSECURE=true
