@@ -17,9 +17,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class AccountControllerIT {
+
+    private static final String AUTH_USER = "test-user";
+
+    // Helper to add JWT authentication to requests
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor jwtUser() {
+        return org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(jwt -> jwt.subject(AUTH_USER));
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,6 +48,7 @@ public class AccountControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header("X-Correlation-ID", UUID.randomUUID().toString()))
@@ -54,6 +66,7 @@ public class AccountControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -67,6 +80,7 @@ public class AccountControllerIT {
                 AccountType.CHECKING, Currency.USD, "PROD-001"
         );
         String response = mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(openRequest)))
                 .andReturn().getResponse().getContentAsString();
@@ -75,6 +89,7 @@ public class AccountControllerIT {
         // Step 2: freeze it
         AccountRequests.FreezeAccountRequest request = new AccountRequests.FreezeAccountRequest("Suspicious activity");
         mockMvc.perform(post("/api/v1/accounts/{accountId}/freeze", accountId)
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted());
@@ -88,6 +103,7 @@ public class AccountControllerIT {
                 AccountType.CHECKING, Currency.USD, "PROD-001"
         );
         String response = mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(openRequest)))
                 .andReturn().getResponse().getContentAsString();
@@ -97,7 +113,8 @@ public class AccountControllerIT {
         Thread.sleep(1500);
 
         // Step 3: read it back
-        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId))
+        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId)
+                        .with(jwtUser()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountId").value(accountId));
     }
@@ -106,7 +123,8 @@ public class AccountControllerIT {
     public void shouldReturnNotFoundWhenAccountDoesNotExist() throws Exception {
         String accountId = "non-existent-" + UUID.randomUUID();
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId))
+        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId)
+                        .with(jwtUser()))
                 .andExpect(status().isNotFound());
     }
 
@@ -115,6 +133,7 @@ public class AccountControllerIT {
         String json = "{\"customerId\":\"cust-1\",\"type\":\"CHECKING\",\"currency\":\"INVALID\",\"productCode\":\"PROD-001\"}";
 
         mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isBadRequest());

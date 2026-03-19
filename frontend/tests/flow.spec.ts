@@ -9,6 +9,7 @@ test.describe('Retail Banking Platform E2E Flow', () => {
     await page.goto('http://localhost:3000');
 
     // 2. Login via Keycloak
+    page.on('dialog', dialog => console.log(`[DIALOG] ${dialog.message()}`));
     await page.click('text=Log In via Keycloak');
     await page.waitForSelector('#username');
     await page.fill('#username', 'egan');
@@ -100,9 +101,14 @@ test.describe('Retail Banking Platform E2E Flow', () => {
 
       // Manual Deposit for E2E testing: Give the Checking account some money!
       if (label === 'Checking') {
+        // We must wait for the backend BalanceProjection worker to finish processing the AccountOpenedEvent
+        // Otherwise, it will overwrite our manual 1000.00 with 0.00!
+        await page.waitForTimeout(3000);
+
         const { execSync } = require('child_process');
         try {
           execSync(`docker exec postgres psql -U banking -d banking_read -c "UPDATE balance_projection SET available_balance = 1000.00 WHERE account_id = '${id}';"`);
+          execSync(`docker exec redis redis-cli del "balance:${id}"`);
           console.log(`[OK] Injected $1000.00 into Checking account ${shortId}`);
         } catch (e) {
           console.error(`[WARN] Failed to inject balance via SQL. Test might fail on transfer.`, e);
@@ -122,6 +128,10 @@ test.describe('Retail Banking Platform E2E Flow', () => {
     await page.waitForURL('http://localhost:3000/transfers');
 
     await page.selectOption('select#sourceAccount', checkingAccountId);
+    
+    // Wait for the injected balance to reflect on the transfer page (React Query refetch)
+    await expect(page.locator('text=Available Balance:')).toContainText('1,000', { timeout: 15_000 });
+
     await page.fill('input[placeholder="Enter exact account ID dashboard..."]', savingsAccountId);
     await page.fill('input[placeholder="e.g. John Doe or Jane Smith"]', 'Egan Nguyen');
     await page.fill('input[placeholder="0.00"]', '50.00');

@@ -18,9 +18,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.test.context.ActiveProfiles;
+
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class TransferControllerIT {
+
+    private static final String AUTH_USER = "test-user";
+
+    // Helper to add JWT authentication to requests
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor jwtUser() {
+        return org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt()
+                .jwt(jwt -> jwt.subject(AUTH_USER));
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -52,6 +63,7 @@ public class TransferControllerIT {
                 customerId, AccountType.CHECKING, Currency.USD, "PROD-001"
         );
         String res = mockMvc.perform(post("/api/v1/accounts")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -80,6 +92,7 @@ public class TransferControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/transfers")
+                        .with(jwtUser())
                         .header("X-Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -94,7 +107,8 @@ public class TransferControllerIT {
         // Wait for Kafka projection to PostgreSQL read model
         Thread.sleep(1000);
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId))
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId)
+                        .with(jwtUser()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountId").value(accountId));
     }
@@ -106,6 +120,7 @@ public class TransferControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/transfers")
+                        .with(jwtUser())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -127,6 +142,7 @@ public class TransferControllerIT {
 
         // First request with key
         mockMvc.perform(post("/api/v1/transfers")
+                .with(jwtUser())
                 .header("X-Idempotency-Key", key)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
@@ -138,6 +154,7 @@ public class TransferControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/transfers")
+                        .with(jwtUser())
                         .header("X-Idempotency-Key", key)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request2)))
