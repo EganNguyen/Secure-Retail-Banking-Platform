@@ -25,6 +25,7 @@ public abstract class AggregateRoot {
     }
 
     public void markEventsAsCommitted() {
+        this.version += uncommittedEvents.size();
         uncommittedEvents.clear();
     }
 

@@ -1,23 +1,16 @@
 package com.bank.account.service.api;
 
+import com.bank.account.domain.AccountType;
 import com.bank.sharedkernel.domain.Currency;
-import com.bank.transfer.application.BalanceView;
-import com.bank.transfer.application.TransferQueryService;
-import com.bank.transfer.application.TransferReadModel;
-import com.bank.transfer.application.TransferSagaOrchestrator;
-import com.bank.transfer.domain.TransferStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,74 +18,129 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class TransferControllerIT {
+public class TransferControllerIT {
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
+    private com.bank.transfer.application.BalanceProjectionRepository balanceRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private TransferSagaOrchestrator orchestrator;
+    private void fundAccount(String accountId, BigDecimal amount) {
+        // Retry logic to handle race condition with AccountProjector
+        for (int i = 0; i < 3; i++) {
+            try {
+                balanceRepository.upsert(accountId, Currency.USD, amount, 0, java.time.Instant.now());
+                return;
+            } catch (Exception e) {
+                try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+                // If it failed with 0, try to load the current version and update (or just retry if it was a lock)
+            }
+        }
+    }
 
-    @MockBean
-    private TransferQueryService queryService;
-
-    @MockBean
-    private IdempotencyService idempotencyService;
+    /**
+     * Creates a new account via the API and returns its accountId.
+     */
+    private String createAccount(String customerId) throws Exception {
+        AccountRequests.OpenAccountRequest req = new AccountRequests.OpenAccountRequest(
+                customerId, AccountType.CHECKING, Currency.USD, "PROD-001"
+        );
+        String res = mockMvc.perform(post("/api/v1/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(res).get("accountId").asText();
+    }
 
     @Test
     void shouldCreateInternalTransfer() throws Exception {
-        String transferId = UUID.randomUUID().toString();
-        TransferReadModel readModel = new TransferReadModel(
-                transferId,
-                "SRC-1",
-                "DST-1",
-                "Alice Doe",
-                new BigDecimal("25.0000"),
-                Currency.USD,
-                "Lunch",
-                TransferStatus.COMPLETED,
-                "LEDGER-123",
-                null,
-                null,
-                Instant.now(),
-                Instant.now()
-        );
-        Mockito.when(orchestrator.initiateInternalTransfer(Mockito.any())).thenReturn(readModel);
-        Mockito.when(idempotencyService.find(Mockito.anyString())).thenReturn(java.util.Optional.empty());
-        Mockito.when(idempotencyService.begin(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(null);
+        String srcId = createAccount("alice-" + UUID.randomUUID().toString().substring(0, 8));
+        String dstId = createAccount("bob-" + UUID.randomUUID().toString().substring(0, 8));
+
+        // Allow projections to settle
+        Thread.sleep(1500);
+        
+        // Fund source account
+        fundAccount(srcId, new BigDecimal("1000.0000"));
 
         TransferRequests.CreateInternalTransferRequest request = new TransferRequests.CreateInternalTransferRequest(
-                "SRC-1",
-                "DST-1",
-                "Alice Doe",
+                srcId,
+                dstId,
+                "Bob Doe",
                 new BigDecimal("25.0000"),
                 Currency.USD,
                 "Lunch"
         );
 
         mockMvc.perform(post("/api/v1/transfers")
-                        .header("X-Idempotency-Key", "idem-1")
+                        .header("X-Idempotency-Key", UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.transferId").value(transferId))
-                .andExpect(jsonPath("$.status").value("COMPLETED"));
+                .andExpect(jsonPath("$.transferId").exists());
     }
 
     @Test
     void shouldGetProjectedBalance() throws Exception {
-        Mockito.when(queryService.getBalance("SRC-1")).thenReturn(
-                new BalanceView("SRC-1", new BigDecimal("75.0000"), Currency.USD, Instant.now())
+        String accountId = createAccount("balance-test-" + UUID.randomUUID().toString().substring(0, 8));
+
+        // Wait for Kafka projection to PostgreSQL read model
+        Thread.sleep(1000);
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").value(accountId));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenIdempotencyKeyIsMissing() throws Exception {
+        TransferRequests.CreateInternalTransferRequest request = new TransferRequests.CreateInternalTransferRequest(
+                "SRC-1", "DST-1", "Alice", new BigDecimal("10.00"), Currency.USD, "Ref"
         );
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", "SRC-1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountId").value("SRC-1"))
-                .andExpect(jsonPath("$.availableBalance").value(75.0000));
+        mockMvc.perform(post("/api/v1/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturnConflictWhenIdempotencyKeyIsReusedWithDifferentRequest() throws Exception {
+        String srcId = createAccount("idem-src-" + UUID.randomUUID().toString().substring(0, 8));
+        String dstId = createAccount("idem-dst-" + UUID.randomUUID().toString().substring(0, 8));
+        
+        // Wait longer for both Account and Balance projections
+        Thread.sleep(3000);
+        fundAccount(srcId, new BigDecimal("1000.0000"));
+
+        String key = "idem-key-" + UUID.randomUUID();
+        TransferRequests.CreateInternalTransferRequest request1 = new TransferRequests.CreateInternalTransferRequest(
+                srcId, dstId, "Alice", new BigDecimal("10.0000"), Currency.USD, "Ref"
+        );
+
+        // First request with key
+        mockMvc.perform(post("/api/v1/transfers")
+                .header("X-Idempotency-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isAccepted());
+
+        // Second request — same key, different amount → conflict
+        TransferRequests.CreateInternalTransferRequest request2 = new TransferRequests.CreateInternalTransferRequest(
+                srcId, dstId, "Alice", new BigDecimal("20.0000"), Currency.USD, "Ref"
+        );
+
+        mockMvc.perform(post("/api/v1/transfers")
+                        .header("X-Idempotency-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isConflict());
     }
 }

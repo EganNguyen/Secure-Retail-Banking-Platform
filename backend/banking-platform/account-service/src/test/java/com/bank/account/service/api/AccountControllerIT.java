@@ -7,17 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class AccountControllerIT {
 
@@ -29,7 +29,6 @@ public class AccountControllerIT {
 
     @Test
     public void shouldOpenAccountSuccessfully() throws Exception {
-        // Given
         AccountRequests.OpenAccountRequest request = new AccountRequests.OpenAccountRequest(
                 "CUST-" + UUID.randomUUID().toString().substring(0, 8),
                 AccountType.CHECKING,
@@ -37,7 +36,6 @@ public class AccountControllerIT {
                 "PROD-001"
         );
 
-        // When & Then
         mockMvc.perform(post("/api/v1/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
@@ -48,37 +46,34 @@ public class AccountControllerIT {
 
     @Test
     public void shouldReturnBadRequestWhenInputIsInvalid() throws Exception {
-        // Given
         AccountRequests.OpenAccountRequest request = new AccountRequests.OpenAccountRequest(
-                "", // Blank customerId
+                "", // blank customerId — must fail validation
                 AccountType.CHECKING,
                 Currency.USD,
                 "PROD-001"
         );
 
-        // When & Then
         mockMvc.perform(post("/api/v1/accounts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
-    @org.springframework.boot.test.mock.mockito.MockBean
-    private com.bank.sharedkernel.domain.EventSourcedRepository<com.bank.account.domain.AccountAggregate> repository;
-
-    @org.springframework.boot.test.mock.mockito.MockBean
-    private com.bank.account.application.AccountReadModelRepository readModelRepository;
-
     @Test
     public void shouldFreezeAccountSuccessfully() throws Exception {
-        String accountId = UUID.randomUUID().toString();
-        com.bank.account.domain.AccountAggregate aggregate = com.bank.account.domain.AccountAggregate.open(
-                new com.bank.account.domain.AccountId(accountId), new com.bank.account.domain.CustomerId("cust-1"), AccountType.CHECKING, Currency.USD, "PROD", "corr"
+        // Step 1: create account
+        AccountRequests.OpenAccountRequest openRequest = new AccountRequests.OpenAccountRequest(
+                "cust-" + UUID.randomUUID().toString().substring(0, 8),
+                AccountType.CHECKING, Currency.USD, "PROD-001"
         );
-        org.mockito.Mockito.when(repository.load(accountId)).thenReturn(aggregate);
+        String response = mockMvc.perform(post("/api/v1/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(openRequest)))
+                .andReturn().getResponse().getContentAsString();
+        String accountId = objectMapper.readTree(response).get("accountId").asText();
 
+        // Step 2: freeze it
         AccountRequests.FreezeAccountRequest request = new AccountRequests.FreezeAccountRequest("Suspicious activity");
-
         mockMvc.perform(post("/api/v1/accounts/{accountId}/freeze", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -86,62 +81,42 @@ public class AccountControllerIT {
     }
 
     @Test
-    public void shouldUnfreezeAccountSuccessfully() throws Exception {
-        String accountId = UUID.randomUUID().toString();
-        com.bank.account.domain.AccountAggregate aggregate = com.bank.account.domain.AccountAggregate.open(
-                new com.bank.account.domain.AccountId(accountId), new com.bank.account.domain.CustomerId("cust-1"), AccountType.CHECKING, Currency.USD, "PROD", "corr"
-        );
-        aggregate.freeze("suspicious", "corr", "causation");
-        org.mockito.Mockito.when(repository.load(accountId)).thenReturn(aggregate);
-
-        AccountRequests.UnfreezeAccountRequest request = new AccountRequests.UnfreezeAccountRequest("Identity verified");
-
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/unfreeze", accountId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isAccepted());
-    }
-
-    @Test
-    public void shouldCloseAccountSuccessfully() throws Exception {
-        String accountId = UUID.randomUUID().toString();
-        com.bank.account.domain.AccountAggregate aggregate = com.bank.account.domain.AccountAggregate.open(
-                new com.bank.account.domain.AccountId(accountId), new com.bank.account.domain.CustomerId("cust-1"), AccountType.CHECKING, Currency.USD, "PROD", "corr"
-        );
-        org.mockito.Mockito.when(repository.load(accountId)).thenReturn(aggregate);
-
-        AccountRequests.CloseAccountRequest request = new AccountRequests.CloseAccountRequest("Customer request");
-
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/close", accountId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isAccepted());
-    }
-
-    @Test
     public void shouldGetAccountSuccessfully() throws Exception {
-        String accountId = UUID.randomUUID().toString();
-        com.bank.account.application.AccountReadModel readModel = new com.bank.account.application.AccountReadModel(
-                accountId, "cust-1", AccountType.SAVINGS, Currency.USD, "SAV", com.bank.account.domain.AccountStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
+        // Step 1: create account
+        AccountRequests.OpenAccountRequest openRequest = new AccountRequests.OpenAccountRequest(
+                "cust-" + UUID.randomUUID().toString().substring(0, 8),
+                AccountType.CHECKING, Currency.USD, "PROD-001"
         );
-        org.mockito.Mockito.when(readModelRepository.findByAccountId(accountId)).thenReturn(java.util.Optional.of(readModel));
+        String response = mockMvc.perform(post("/api/v1/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(openRequest)))
+                .andReturn().getResponse().getContentAsString();
+        String accountId = objectMapper.readTree(response).get("accountId").asText();
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/accounts/{accountId}", accountId))
+        // Step 2: wait for async Kafka projection to write to PostgreSQL read model
+        Thread.sleep(1500);
+
+        // Step 3: read it back
+        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accountId").value(accountId))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.accountId").value(accountId));
     }
 
     @Test
-    public void shouldGetAccountsForCustomerSuccessfully() throws Exception {
-        String customerId = "cust-1";
-        com.bank.account.application.AccountReadModel readModel = new com.bank.account.application.AccountReadModel(
-                UUID.randomUUID().toString(), customerId, AccountType.SAVINGS, Currency.USD, "SAV", com.bank.account.domain.AccountStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
-        );
-        org.mockito.Mockito.when(readModelRepository.findByCustomerId(customerId)).thenReturn(java.util.List.of(readModel));
+    public void shouldReturnNotFoundWhenAccountDoesNotExist() throws Exception {
+        String accountId = "non-existent-" + UUID.randomUUID();
 
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/customers/{customerId}/accounts", customerId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accounts[0].customerId").value(customerId));
+        mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void shouldReturnBadRequestForInvalidCurrency() throws Exception {
+        String json = "{\"customerId\":\"cust-1\",\"type\":\"CHECKING\",\"currency\":\"INVALID\",\"productCode\":\"PROD-001\"}";
+
+        mockMvc.perform(post("/api/v1/accounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 }

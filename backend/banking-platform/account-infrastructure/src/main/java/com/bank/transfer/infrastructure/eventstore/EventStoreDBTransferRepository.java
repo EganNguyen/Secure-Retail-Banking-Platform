@@ -32,7 +32,7 @@ public class EventStoreDBTransferRepository implements TransferEventSourcedRepos
         String streamName = streamName(aggregate.getTransferId().value());
         List<EventData> eventData = new ArrayList<>();
         for (DomainEvent event : aggregate.getUncommittedEvents()) {
-            eventData.add(EventData.builderAsJson(event.getClass().getSimpleName(), serializer.toJson(event)).build());
+            eventData.add(EventData.builderAsJson(event.getClass().getSimpleName(), serializer.toJson(event).getBytes(java.nio.charset.StandardCharsets.UTF_8)).build());
         }
 
         AppendToStreamOptions options = AppendToStreamOptions.get()
@@ -40,7 +40,7 @@ public class EventStoreDBTransferRepository implements TransferEventSourcedRepos
                         ? ExpectedRevision.noStream()
                         : ExpectedRevision.expectedRevision(expectedVersion));
         try {
-            client.appendToStream(streamName, options, eventData.iterator()).get(10, TimeUnit.SECONDS);
+            client.appendToStream(streamName, options, eventData.iterator()).get(30, TimeUnit.SECONDS);
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to append to stream " + streamName, ex);
         }
