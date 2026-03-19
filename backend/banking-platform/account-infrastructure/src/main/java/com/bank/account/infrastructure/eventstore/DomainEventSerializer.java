@@ -5,6 +5,11 @@ import com.bank.account.domain.AccountFrozenEvent;
 import com.bank.account.domain.AccountOpenedEvent;
 import com.bank.account.domain.AccountUnfrozenEvent;
 import com.bank.sharedkernel.domain.DomainEvent;
+import com.bank.transfer.domain.TransferCompletedEvent;
+import com.bank.transfer.domain.TransferFailedEvent;
+import com.bank.transfer.domain.TransferInitiatedEvent;
+import com.bank.transfer.domain.TransferLedgerPostedEvent;
+import com.bank.transfer.domain.TransferValidatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -21,6 +26,11 @@ public class DomainEventSerializer {
         register("AccountFrozenEvent", AccountFrozenEvent.class);
         register("AccountUnfrozenEvent", AccountUnfrozenEvent.class);
         register("AccountClosedEvent", AccountClosedEvent.class);
+        register("TransferInitiatedEvent", TransferInitiatedEvent.class);
+        register("TransferValidatedEvent", TransferValidatedEvent.class);
+        register("TransferLedgerPostedEvent", TransferLedgerPostedEvent.class);
+        register("TransferCompletedEvent", TransferCompletedEvent.class);
+        register("TransferFailedEvent", TransferFailedEvent.class);
     }
 
     private void register(String type, Class<? extends DomainEvent> clazz) {

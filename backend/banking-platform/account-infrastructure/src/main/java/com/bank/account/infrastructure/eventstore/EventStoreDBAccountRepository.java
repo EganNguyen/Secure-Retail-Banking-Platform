@@ -31,7 +31,7 @@ public class EventStoreDBAccountRepository implements EventSourcedRepository<Acc
         List<EventData> eventData = new ArrayList<>();
         for (DomainEvent event : aggregate.getUncommittedEvents()) {
             String json = serializer.toJson(event);
-            eventData.add(EventData.builderAsJson(event.getClass().getSimpleName(), json).build());
+            eventData.add(EventData.builderAsJson(event.getClass().getSimpleName(), json.getBytes(java.nio.charset.StandardCharsets.UTF_8)).build());
         }
 
         AppendToStreamOptions options = AppendToStreamOptions.get()
@@ -41,7 +41,7 @@ public class EventStoreDBAccountRepository implements EventSourcedRepository<Acc
 
         try {
             client.appendToStream(streamName, options, eventData.iterator())
-                    .get(10, java.util.concurrent.TimeUnit.SECONDS);
+                    .get(30, java.util.concurrent.TimeUnit.SECONDS);
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to append to stream " + streamName, ex);
         }

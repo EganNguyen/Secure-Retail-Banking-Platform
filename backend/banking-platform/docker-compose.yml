@@ -20,6 +20,7 @@ services:
       - EVENTSTORE_INSECURE=true
       - EVENTSTORE_EXT_IP=0.0.0.0
       - EVENTSTORE_HTTP_PORT=2113
+      - EVENTSTORE_ADVERTISE_HOST_TO_CLIENT_AS=127.0.0.1
       - EVENTSTORE_RUN_PROJECTIONS=All
       - EVENTSTORE_START_STANDARD_PROJECTIONS=true
     ports:
@@ -70,16 +71,63 @@ services:
     ports:
       - "6379:6379"
 
+  postgres-keycloak:
+    image: postgres:16
+    container_name: postgres-keycloak
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: strong_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-keycloak-data:/var/lib/postgresql/data
+
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.2
     container_name: keycloak
-    command: [ "start-dev", "--http-port=8080" ]
+    command: start
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: strong_password
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8080:8080"
+    depends_on:
+      - postgres-keycloak
+
+  account-service:
+    build:
+      context: .
+      dockerfile: account-service/Dockerfile
+    container_name: account-service
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - eventstore
+      - keycloak
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banking_read?stringtype=unspecified
+      SPRING_DATASOURCE_USERNAME: banking
+      SPRING_DATASOURCE_PASSWORD: banking
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EVENTSTORE_CONNECTION_STRING: esdb://eventstore:2113?tls=false
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/retail
+      JAVA_TOOL_OPTIONS: -Duser.timezone=UTC
+      TZ: UTC
+    ports:
+      - "8081:8081"
 
 volumes:
   eventstore-data:
   postgres-data:
+  postgres-keycloak-data:

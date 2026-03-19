@@ -1,6 +1,28 @@
-# Build & Verify Guide — Phase 1: Foundation
+# Build & Verify Guide — Phase 2
 
-This guide provides instructions for setting up, building, and verifying the Phase 1 implementation of the Secure Retail Banking Platform.
+This guide provides instructions for setting up, building, and verifying the Phase 1 and 2 implementation of the Secure Retail Banking Platform.
+
+## Roadmap & Features Implemented
+
+### Phase 1 — Foundation (Weeks 1–4)
+- [x] Repository and module structure setup (multi-module Maven)
+- [x] EventStoreDB + Kafka + PostgreSQL + Redis local dev environment (Docker Compose)
+- [x] `AggregateRoot` base class + `EventSourcedRepository` interface
+- [x] `AccountAggregate` — full state machine + events + unit tests
+- [x] Account Service: command side (open, freeze, unfreeze, close)
+- [x] Account Service: query side (projector + read model)
+- [x] Outbox pattern implementation + Kafka publisher
+- [x] Keycloak integration + Spring Security setup
+
+### Phase 2 — Transfer Core (Weeks 5–8)
+- [x] `TransferAggregate` + saga state machine
+- [x] Transfer validation (limits, account status, AML name check)
+- [x] `TransferSagaOrchestrator` — internal transfer flow
+- [x] `LedgerService` — double-entry bookkeeping
+- [x] Balance projection + Redis cache
+- [x] Idempotency middleware
+- [x] Optimistic concurrency handling + retry logic
+- [x] Transfer API endpoints + WebSocket notifications
 
 ## 1. Prerequisites
 
@@ -15,6 +37,15 @@ Ensure the following tools are installed:
 > export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 > export PATH=$JAVA_HOME/bin:$PATH
 > ```
+
+> On Windows,
+> Download Maven https://maven.apache.org/download.cgi
+> Binary zip archive (apache-maven-3.x.x-bin.zip)
+> Unzip to a clean location, for example: C:\Program Files\Apache\Maven
+> Set Environment Variables
+> Edit the system environment variables
+> New System Variable: `MAVEN_HOME = C:\Program Files\Apache\Maven`
+> Edit Path: Add `C:\Program Files\Apache\Maven\bin`
 
 ## 2. Infrastructure Setup
 
@@ -43,7 +74,7 @@ mvn clean install -DskipTests
 ## 4. Verification Steps
 
 ### 4.1 Unit Tests
-Verify the domain logic and state machine:
+Verify the domain logic and state machine for both accounts and transfers:
 ```bash
 mvn test -pl account-domain
 ```
@@ -66,12 +97,12 @@ Check if the read model tables are created:
 ```bash
 docker exec postgres psql -U banking -d banking_read -c "\dt"
 ```
-Expected tables: `account_read_model`, `outbox_messages`.
+Expected tables: `account_read_model`, `outbox_messages`, `transfer_read_model`, `ledger_entry`, `balance_projection`, `idempotency_record`.
 
 ### 4.5 API Testing
-With the `account-service` running, you can test the REST APIs. Note that security validation is currently bypassed for `/api/v1/accounts/**` to facilitate local testing.
+With the `account-service` running, you can test the REST APIs. Note that security validation is currently bypassed for `/api/v1/**` to facilitate local testing.
 
-**1. Open a New Account:**
+**1. Open a New Account (Source):**
 ```bash
 curl -X POST http://localhost:8081/api/v1/accounts \
   -H "Content-Type: application/json" \
@@ -82,54 +113,54 @@ curl -X POST http://localhost:8081/api/v1/accounts \
     "productCode": "SAV-001"
   }'
 ```
-Expected response: `201 Created` with JSON containing the new `accountId` (e.g., `{"accountId":"..."}`).
 
-**2. Get Account Details:**
-*(Replace `{accountId}` with the ID returned from the previous step)*
+**2. Open a New Account (Destination):**
 ```bash
-curl -X GET http://localhost:8081/api/v1/accounts/{accountId}
-```
-
-**3. Freeze an Account:**
-```bash
-curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/freeze \
+curl -X POST http://localhost:8081/api/v1/accounts \
   -H "Content-Type: application/json" \
   -d '{
-    "reason": "Suspicious activity detected"
+    "customerId": "cust-2",
+    "type": "CHECKING",
+    "currency": "USD",
+    "productCode": "CHK-001"
   }'
 ```
-Expected response: `202 Accepted`
 
-**4. Unfreeze an Account:**
+**3. Initiate an Internal Transfer:**
+*(Replace the account IDs below and specify an `X-Idempotency-Key`)*
 ```bash
-curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/unfreeze \
+curl -X POST http://localhost:8081/api/v1/transfers \
   -H "Content-Type: application/json" \
+  -H "X-Idempotency-Key: transfer-req-001" \
   -d '{
-    "reason": "Identity verified"
+    "sourceAccountId": "{sourceAccountId}",
+    "destinationAccountId": "{destinationAccountId}",
+    "beneficiaryName": "Bob Doe",
+    "amount": 25.0000,
+    "currency": "USD",
+    "reference": "Dinner bill split"
   }'
 ```
-Expected response: `202 Accepted`
+Expected response: `202 Accepted` with JSON containing `{ "transferId": "..." }`.
 
-**5. Close an Account:**
+**4. Check Transfer Status:**
 ```bash
-curl -X POST http://localhost:8081/api/v1/accounts/{accountId}/close \
-  -H "Content-Type: application/json" \
-  -d '{
-    "reason": "Customer request"
-  }'
-```
-Expected response: `202 Accepted`
-
-**6. List Accounts for Customer:**
-```bash
-curl -X GET http://localhost:8081/api/v1/customers/cust-1/accounts
+curl -X GET http://localhost:8081/api/v1/transfers/{transferId}
 ```
 
-**7. Test Integration Tests:**
-The repository includes integration tests utilizing Testcontainers and mocked repositories to ensure correct behavior:
+**5. Get Account Balances:**
 ```bash
-mvn test -pl account-service -Dtest=AccountControllerIT
+curl -X GET http://localhost:8081/api/v1/accounts/{sourceAccountId}/balance
+curl -X GET http://localhost:8081/api/v1/accounts/{destinationAccountId}/balance
 ```
+
+### 4.6 Verification through Integration Tests
+The repository includes full integration tests utilizing Testcontainers for the Database, Kafka, Redis, and EventStoreDB. You can run all integration tests for both Phase 1 and Phase 2 logic using:
+
+```bash
+mvn test -pl account-service -Dtest=AccountControllerIT,TransferControllerIT
+```
+*Wait for the tests to complete. You should see 0 failures and 0 errors across 10 passing tests.*
 
 ## 5. Troubleshooting & Common Issues
 
@@ -152,7 +183,7 @@ If `OutboxRepository` or other JPA beans are not found, ensure `AccountServiceAp
 ```
 
 ### 5.4 Docker Volume Reset
-If the database role `banking` is missing inside the container, reset the volumes:
+If the database role `banking` or idempotency table is missing or corrupted inside the container, reset the volumes:
 ```bash
 docker-compose down -v
 docker-compose up -d
