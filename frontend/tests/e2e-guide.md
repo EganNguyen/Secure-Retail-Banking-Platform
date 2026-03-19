@@ -20,9 +20,10 @@ docker-compose up -d
 ```
 
 ### 2. Provision Keycloak
-Keycloak needs to be configured with the `retail` realm and `retail-app` client. Run the provisioning script/commands (typically found in your CI or setup scripts):
-*   Ensure the `retail` realm exists.
-*   Create a user (e.g., `egan` / `password123`).
+Keycloak is now configured to automatically provision the `retail` realm, `retail-app` client, and the `egan` user upon startup via the `realm-export.json` file in `backend/banking-platform/keycloak/`.
+
+> [!NOTE]
+> If you need to reset the Keycloak data, run `docker-compose down -v` to remove the volumes.
 
 ### 3. Start the Backend (Account Service)
 In the `backend/banking-platform` directory:
@@ -36,6 +37,8 @@ In the `frontend` directory:
 ```bash
 npm install
 npm run dev
+docker build -t nextjs-app .
+docker run -p 3000:3000 nextjs-app
 ```
 The frontend should be accessible at `http://localhost:3000`.
 
