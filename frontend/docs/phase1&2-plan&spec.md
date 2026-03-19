@@ -181,3 +181,19 @@ We will mirror the exact shapes expected by the Phase 1 & 2 backend controllers.
 - Connect `POST /api/v1/transfers` and handle success/failure flows via sagas feedback.
 - Add `TransferReceipt` page for transaction query.
 - Final UI/UX polish (micro-animations, skeleton loaders, error boundaries).
+
+---
+
+## 9. Verification & Dockerization (Completed)
+
+### Docker Architecture
+The frontend is containerized using a multi-stage **Dockerfile** (Node.js 20/Alpine) with `output: 'standalone'` optimization. It communicates with the backend via a Docker network, using decoupled JWT issuer/JWK set endpoints to support both browser-local and container-internal validation.
+
+### End-to-End Verification
+The full journey was verified using a Playwright suite (`tests/flow.spec.ts`):
+1.  **Auth Integration**: Successfully handled Keycloak login and session hydration.
+2.  **Account Lifecycle**: Verified account creation commands and async read-model projections.
+3.  **Money Movement**: Confirmed end-to-end internal transfers ($50.00) between Checking and Savings.
+
+**Result**: All tests PASSED in the integrated Docker environment.
+
