@@ -49,7 +49,10 @@ export default function TransferPage() {
     e.preventDefault();
     if (!sourceAccountId || !destinationAccountId || !selectedSourceAccount) return;
     
-    // Client-side validation for amounts
+    // Client-side validation for amounts. 
+    // CAUTION: This depends on the 'balance' projection in the read model.
+    // In scenarios with rapid updates (e.g., E2E tests), the cached balance might 
+    // be stale. The backend saga performs the authoritative validation.
     if (balanceData && parseFloat(amount) > balanceData.availableBalance) {
       alert("Insufficient funds");
       return;

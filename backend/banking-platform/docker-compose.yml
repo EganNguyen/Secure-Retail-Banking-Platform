@@ -128,6 +128,9 @@ services:
       EVENTSTORE_CONNECTION_STRING: esdb://eventstore:2113?tls=false
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/retail
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/retail/protocol/openid-connect/certs
+      # Use Redis for balance caching to allow E2E tests to invalidate state externally.
+      # Default 'memory' cache (JVM ConcurrentHashMap) is unreachable for external test scripts.
+      TRANSFER_BALANCE_CACHE_TYPE: redis
       JAVA_TOOL_OPTIONS: -Duser.timezone=UTC
       TZ: UTC
     ports:
