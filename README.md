@@ -68,33 +68,58 @@ This project follows a strict recipe for large-scale production environments:
 
 ## 🚦 Getting Started
 
-### Prerequisites
-- Docker & Docker Compose
-- Java 21 JDK
-- Maven 3.9+
-
-### Infrastructure Setup
-Spin up the entire ecosystem (Kafka, EventStoreDB, Redis, Keycloak, Postgres) using the provided compose file:
+### 📦 Infrastructure & Backend Setup
+The entire infrastructure (Kafka, EventStoreDB, Redis, Keycloak, Postgres) along with the core backend services are orchestrated via Docker Compose.
 
 ```bash
+# Navigate to the banking platform directory
 cd backend/banking-platform
+
+# Spin up the ecosystem
 docker-compose up -d
 ```
 
-### Running Services
-Each service can be run independently using Maven:
+> [!NOTE]
+> Backend services run inside Docker by default for consistent environments. To run a service independently for development: `mvn spring-boot:run -pl account-service`.
+
+### 💻 Frontend Setup
+The frontend is a Next.js application that can be run containerized for production parity:
 
 ```bash
-mvn spring-boot:run -pl account-service
+# Build the frontend image
+docker build -t nextjs-app ./frontend
+
+# Run the frontend container
+docker run -p 3000:3000 nextjs-app
 ```
 
 ---
 
 ## 🧪 Testing Strategy
 
-- **Unit Tests**: Focus on domain logic within Aggregates and Value Objects.
-- **Integration Tests**: Verify persistence (EventStoreDB/Postgres) and Kafka messaging using **Testcontainers**.
-- **E2E Tests**: Comprehensive flow validation from the frontend to backend using Playwright.
+### 🟢 Unit & Integration Tests
+- **Unit Tests**: Focus on domain logic within Aggregates.
+- **Integration Tests**: Verify persistence and Kafka messaging using **Testcontainers**.
+  ```bash
+  mvn test -pl account-service
+  ```
+
+### 🎭 End-to-End (E2E) Testing
+We use **Playwright** for comprehensive browser-based verification of the entire system flow.
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run E2E tests in headless mode (CI)
+npx playwright test tests/flow.spec.ts
+
+# Run E2E tests in headed mode (Local Debugging)
+npx playwright test tests/flow.spec.ts --headed
+```
 
 ---
 
