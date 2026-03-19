@@ -1,0 +1,37 @@
+{
+  "realm": "retail",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "retail-app",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "egan",
+      "enabled": true,
+      "email": "egan@example.com",
+      "firstName": "Egan",
+      "lastName": "Nguyen",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-retail"
+      ]
+    }
+  ]
+}

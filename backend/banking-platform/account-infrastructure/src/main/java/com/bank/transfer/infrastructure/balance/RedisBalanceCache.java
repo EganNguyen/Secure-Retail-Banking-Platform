@@ -2,7 +2,6 @@ package com.bank.transfer.infrastructure.balance;
 
 import com.bank.sharedkernel.domain.Currency;
 import com.bank.transfer.application.BalanceView;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -13,7 +12,12 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-@ConditionalOnBean(StringRedisTemplate.class)
+/* 
+ * NOTE: @ConditionalOnBean(StringRedisTemplate.class) was removed because component scanning 
+ * may occur before the Redis auto-configuration triggers the creation of the StringRedisTemplate bean.
+ * Removing the condition ensures the bean is picked up by the container, and Spring DI handles 
+ * the wiring once the Redis starter is present in the classpath.
+ */
 @ConditionalOnProperty(name = "transfer.balance-cache.type", havingValue = "redis")
 public class RedisBalanceCache implements BalanceCache {
     private final StringRedisTemplate redisTemplate;
