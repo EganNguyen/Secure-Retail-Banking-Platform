@@ -1,122 +1,270 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { accountsApi } from "@/api/accounts";
+import { accountsApi, type Account } from "@/api/accounts";
 import { useAuth } from "@/components/AuthProvider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { Plus, CreditCard, ArrowRight } from "lucide-react";
+import { format } from "date-fns";
+import {
+  CreditCard,
+  ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  PieChart,
+  ShieldAlert,
+  Target,
+  Send,
+  Plus
+} from "lucide-react";
 
 export default function DashboardPage() {
   const { userProfile } = useAuth();
-  // Using userProfile?.id assuming Keycloak injects sub/id there. 
-  // If `id` isn't available from Keycloak, we should use `userProfile?.username` or a specific claim.
   const customerId = userProfile?.id || userProfile?.sub;
 
-  const { data: accounts, isLoading, error } = useQuery({
+  const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounts', customerId],
     queryFn: () => accountsApi.getAccountsByCustomer(customerId!),
     enabled: !!customerId,
   });
 
+  const currentDate = format(new Date(), "EEEE, d MMM yyyy");
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
-          <p className="text-[var(--foreground)] opacity-70 mt-1">Here is the overview of your accounts.</p>
+    <>
+      <div className="topbar">
+        <div className="topbar-left">
+          <span className="page-title">Good morning, {userProfile?.firstName || 'User'}</span>
+          <span className="date-badge">{currentDate}</span>
         </div>
-        <Link href="/accounts/new">
-          <Button className="bg-[var(--primary)] text-white shadow-md hover:shadow-lg transition-all rounded-full px-6">
-            <Plus className="mr-2 h-4 w-4" /> Open New Account
-          </Button>
-        </Link>
+        <div className="topbar-right">
+          <div className="topbar-btn notif-dot">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+            </svg>
+          </div>
+          <div className="topbar-btn">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+          </div>
+          <Link href="/transfers">
+            <button className="transfer-btn">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              New Transfer
+            </button>
+          </Link>
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="h-20 bg-[var(--secondary)]/50 rounded-t-xl" />
-              <CardContent className="h-24" />
-            </Card>
-          ))}
+      <div className="content animate-fade-in">
+        
+        {/* Placeholder Saga Strip (Mocked for now) */}
+        <div className="saga-strip">
+          <div className="saga-label">Transfer TRF-2026-001 · $250.00 USD · in progress</div>
+          <div className="saga-steps">
+            <div className="saga-step done">Initiated</div>
+            <div className="saga-sep"></div>
+            <div className="saga-step done">Risk scored</div>
+            <div className="saga-sep"></div>
+            <div className="saga-step active">Debiting</div>
+            <div className="saga-sep"></div>
+            <div className="saga-step pending">Crediting</div>
+            <div className="saga-sep"></div>
+            <div className="saga-step pending">Complete</div>
+          </div>
         </div>
-      ) : error ? (
-        <Card className="border-[var(--danger)]/50 bg-[var(--danger)]/5">
-          <CardContent className="pt-6 text-center text-[var(--danger)]">
-            <p>Failed to load accounts. Please try again later.</p>
-          </CardContent>
-        </Card>
-      ) : !accounts || accounts.length === 0 ? (
-        <Card className="glass relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CardContent className="flex flex-col items-center justify-center p-12 text-center relative z-10">
-            <div className="w-16 h-16 bg-[var(--secondary)] rounded-full flex items-center justify-center mb-4 text-[var(--primary)]">
-              <CreditCard size={32} />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">No Accounts Found</h3>
-            <p className="text-[var(--foreground)] opacity-70 max-w-sm mb-6">
-              Looks like you haven't opened any accounts yet. Open a checking or savings account to get started.
-            </p>
+
+        <div className="welcome-bar">
+          <div className="welcome-text">
+            <h2>Financial Overview</h2>
+            <p>Your money at a glance. You have {accounts?.length || 0} active accounts.</p>
+          </div>
+          <div className="welcome-actions">
             <Link href="/accounts/new">
-              <Button>Open First Account</Button>
+              <button className="wa-btn primary">Open New Account</button>
             </Link>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {accounts.map((account) => (
-            <Card key={account.accountId} className="group hover:border-[var(--primary)]/50 transition-colors shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between relative overflow-hidden">
-              <Link href={`/accounts/${account.accountId}`} className="absolute inset-0 z-10">
-                <span className="sr-only">View Account</span>
-              </Link>
-              <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1 text-[var(--primary)]">
-                <ArrowRight size={20} />
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-[var(--foreground)]/70 text-sm font-medium uppercase tracking-wider flex justify-between">
-                  {account.type} ACCOUNT
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    account.status === 'ACTIVE' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' : 
-                    account.status === 'FROZEN' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30' : 
-                    'bg-red-100 text-red-700 dark:bg-red-900/30'
-                  }`}>
-                    {account.status}
-                  </span>
-                </CardTitle>
-                <div className="text-2xl font-bold mt-2 font-mono">
-                  {account.accountId.split('-')[0]}...
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Balance is fetched independently per account, or could be included in the list model depending on backend. We fetch it here eagerly. */}
-                <AccountBalance accountId={account.accountId} />
-              </CardContent>
-            </Card>
-          ))}
+            <button className="wa-btn ghost">View Report</button>
+          </div>
         </div>
-      )}
-    </div>
+
+        <div className="stats-row">
+          <div className="stat-card">
+            <div className="stat-icon si-blue"><DollarSign /></div>
+            <div className="stat-label">Total Balance</div>
+            <div className="stat-value">$14,250.00</div>
+            <div className="stat-change up"><TrendingUp size={12}/> +4.2% this month</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon si-green"><TrendingUp /></div>
+            <div className="stat-label">Income (30d)</div>
+            <div className="stat-value">$6,450.00</div>
+            <div className="stat-change up"><TrendingUp size={12}/> +1.1% this month</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon si-amber"><TrendingDown /></div>
+            <div className="stat-label">Spending (30d)</div>
+            <div className="stat-value">$2,140.50</div>
+            <div className="stat-change down"><TrendingDown size={12}/> +12.4% this month</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon si-teal"><PieChart /></div>
+            <div className="stat-label">Savings Rate</div>
+            <div className="stat-value">66.8%</div>
+            <div className="stat-change neutral">-2.1% from last month</div>
+          </div>
+        </div>
+
+        <div className="qaction-grid mb-5" style={{marginBottom: "22px"}}>
+          <Link href="/transfers" className="qaction">
+            <div className="qaction-icon" style={{background: "var(--nab-blue-light)", color: "var(--nab-blue)"}}><Send /></div>
+            <div className="qaction-label">Send Money</div>
+          </Link>
+          <div className="qaction">
+            <div className="qaction-icon" style={{background: "var(--nab-green-light)", color: "var(--nab-green)"}}><Plus /></div>
+            <div className="qaction-label">Add Funds</div>
+          </div>
+          <div className="qaction">
+            <div className="qaction-icon" style={{background: "var(--nab-amber-light)", color: "var(--nab-amber)"}}><ShieldAlert /></div>
+            <div className="qaction-label">Freeze Card</div>
+          </div>
+          <div className="qaction">
+            <div className="qaction-icon" style={{background: "var(--nab-teal-light)", color: "var(--nab-teal)"}}><Target /></div>
+            <div className="qaction-label">Settings</div>
+          </div>
+        </div>
+
+        <div className="grid-3">
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Your Accounts</div>
+              <Link href="/accounts"><div className="card-action">View all</div></Link>
+            </div>
+            
+            {isLoading ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-12 bg-[var(--nab-surface-2)] rounded"></div>
+                <div className="h-12 bg-[var(--nab-surface-2)] rounded"></div>
+              </div>
+            ) : accounts?.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-[var(--nab-text-3)] text-sm mb-4">You don't have any accounts yet.</p>
+                <Link href="/accounts/new">
+                  <button className="wa-btn primary bg-[var(--nab-blue)] text-white">Open Account</button>
+                </Link>
+              </div>
+            ) : (
+              <div>
+                {accounts
+                  ?.sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime())
+                  .map(account => (
+                    <AccountListItem key={account.accountId} account={account} />
+                  ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Spending</div>
+              <div className="card-action">Details</div>
+            </div>
+            <div className="spending-tabs">
+              <div className="spending-tab active">This month</div>
+              <div className="spending-tab">Quarter</div>
+              <div className="spending-tab">Year</div>
+            </div>
+            <div className="chart-wrap bg-[var(--nab-surface-2)] rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <PieChart size={40} className="mx-auto text-[var(--nab-blue-mid)] mb-2" />
+                <span className="text-xs text-[var(--nab-text-3)]">Chart.js pending</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid-2">
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Recent Transactions</div>
+              <div className="card-action">View all</div>
+            </div>
+            <div className="text-center py-8">
+              <p className="text-[var(--nab-text-3)] text-sm">No recent transactions to display.</p>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">Transfer Limits</div>
+              <div className="card-action">Manage</div>
+            </div>
+            
+            <div className="limit-item">
+              <div className="limit-top">
+                <div className="limit-name">Daily Internal</div>
+                <div className="limit-vals">$250 / $10,000</div>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill bg-[var(--nab-blue)]" style={{width: "2.5%"}}></div>
+              </div>
+            </div>
+
+            <div className="limit-item">
+              <div className="limit-top">
+                <div className="limit-name">Monthly External</div>
+                <div className="limit-vals">$4,500 / $25,000</div>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill bg-[var(--nab-teal)]" style={{width: "18%"}}></div>
+              </div>
+            </div>
+
+            <div className="limit-item">
+              <div className="limit-top">
+                <div className="limit-name">Overseas Transfer</div>
+                <div className="limit-vals">$0 / $5,000</div>
+              </div>
+              <div className="progress-bar">
+                <div className="progress-fill bg-[var(--nab-amber)]" style={{width: "0%"}}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
-function AccountBalance({ accountId }: { accountId: string }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ['balance', accountId],
-    queryFn: () => accountsApi.getBalance(accountId),
+function AccountListItem({ account }: { account: Account }) {
+  const { data: balanceData } = useQuery({
+    queryKey: ['balance', account.accountId],
+    queryFn: () => accountsApi.getBalance(account.accountId),
   });
 
-  if (isLoading) return <div className="h-8 w-1/2 bg-[var(--secondary)] rounded animate-pulse mt-2" />;
-  if (!data) return <div className="text-sm opacity-50">Balance unavailable</div>;
-
   return (
-    <div className="mt-4">
-      <div className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-indigo-600">
-        {new Intl.NumberFormat('en-US', { style: 'currency', currency: data.currency }).format(data.availableBalance)}
+    <div className="account-item group">
+      <div className="acct-icon bg-[var(--nab-blue-light)] text-[var(--nab-blue)]">
+        <CreditCard size={20} />
       </div>
-      <p className="text-xs opacity-60 mt-1">Available Balance</p>
+      <div className="acct-info">
+        <div className="acct-name">{account.type} Account</div>
+        <div className="acct-num">ID: {account.accountId.split('-')[0]}</div>
+      </div>
+      <div className="acct-balance">
+        {balanceData ? (
+          <>
+            <div className="acct-amount">{new Intl.NumberFormat('en-US', { style: 'currency', currency: balanceData.currency || account.currency }).format(balanceData.availableBalance)}</div>
+            <div className="acct-avail">Available</div>
+          </>
+        ) : (
+          <div className="acct-avail animate-pulse bg-[var(--nab-surface-2)] h-4 w-16 rounded mt-1"></div>
+        )}
+      </div>
     </div>
   );
 }

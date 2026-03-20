@@ -1,0 +1,1459 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --nab-red: #CC0000;
+    --nab-red-light: #FDEAEA;
+    --nab-blue-deep: #003087;
+    --nab-blue: #0050C8;
+    --nab-blue-light: #E6EEF9;
+    --nab-blue-mid: #B8CEEF;
+    --nab-teal: #007A73;
+    --nab-teal-light: #E0F2F1;
+    --nab-green: #1A7A3C;
+    --nab-green-light: #E8F5ED;
+    --nab-amber: #A05A00;
+    --nab-amber-light: #FFF3E0;
+    --nab-text: #1A1A2E;
+    --nab-text-2: #4A4A6A;
+    --nab-text-3: #8585A3;
+    --nab-surface: #FFFFFF;
+    --nab-surface-2: #F4F6FB;
+    --nab-surface-3: #EEF1F8;
+    --nab-border: rgba(0, 48, 135, 0.12);
+    --nab-border-2: rgba(0, 48, 135, 0.2);
+    --ff: 'DM Sans', sans-serif;
+    --fm: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--ff);
+    background: var(--nab-surface-2);
+    color: var(--nab-text);
+    min-height: 100vh;
+  }
+
+  .shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--nab-blue-deep);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: 0 0 24px 0;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-star {
+    width: 32px;
+    height: 32px;
+    background: var(--nab-red);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-star svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .sidebar-user {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: white;
+  }
+
+  .user-tier {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .nav {
+    padding: 12px 0;
+    flex: 1;
+  }
+
+  .nav-section {
+    padding: 8px 20px 4px;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nav-item:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .nav-item.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.14);
+    border-left: 2px solid var(--nab-red);
+    padding-left: 18px;
+  }
+
+  .nav-item svg {
+    width: 15px;
+    height: 15px;
+    opacity: 0.8;
+  }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--nab-red);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 9px;
+  }
+
+  .sidebar-bottom {
+    padding: 0 20px;
+  }
+
+  .upgrade-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .upgrade-card p {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .upgrade-btn {
+    background: var(--nab-red);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 12px;
+    cursor: pointer;
+    width: 100%;
+    font-family: var(--ff);
+  }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    overflow: auto;
+  }
+
+  .topbar {
+    background: var(--nab-surface);
+    border-bottom: 1px solid var(--nab-border);
+    padding: 0 28px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--nab-text);
+  }
+
+  .date-badge {
+    font-size: 11px;
+    color: var(--nab-text-3);
+    background: var(--nab-surface-2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--nab-border);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--nab-border);
+    background: var(--nab-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .topbar-btn svg {
+    width: 16px;
+    height: 16px;
+    color: var(--nab-text-2);
+  }
+
+  .notif-dot {
+    position: relative;
+  }
+
+  .notif-dot::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 7px;
+    height: 7px;
+    background: var(--nab-red);
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+
+  .transfer-btn {
+    background: var(--nab-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: var(--ff);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .transfer-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .content {
+    padding: 24px 28px;
+  }
+
+  /* ── Welcome bar ── */
+  .welcome-bar {
+    background: linear-gradient(135deg, var(--nab-blue-deep) 0%, var(--nab-blue) 100%);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .welcome-bar::before {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+  }
+
+  .welcome-bar::after {
+    content: '';
+    position: absolute;
+    right: 60px;
+    bottom: -60px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+  }
+
+  .welcome-text h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .welcome-text p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 4px;
+  }
+
+  .welcome-actions {
+    display: flex;
+    gap: 10px;
+    z-index: 1;
+  }
+
+  .wa-btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--ff);
+    border: none;
+  }
+
+  .wa-btn.primary {
+    background: white;
+    color: var(--nab-blue-deep);
+  }
+
+  .wa-btn.ghost {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  /* ── Quick Stats ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .stat-card {
+    background: var(--nab-surface);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid var(--nab-border);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--nab-text-3);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--nab-text);
+    font-family: var(--fm);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-change {
+    font-size: 11px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-change.up {
+    color: var(--nab-green);
+  }
+
+  .stat-change.down {
+    color: var(--nab-red);
+  }
+
+  .stat-change.neutral {
+    color: var(--nab-text-3);
+  }
+
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .stat-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .si-blue {
+    background: var(--nab-blue-light);
+  }
+
+  .si-blue svg {
+    color: var(--nab-blue);
+  }
+
+  .si-green {
+    background: var(--nab-green-light);
+  }
+
+  .si-green svg {
+    color: var(--nab-green);
+  }
+
+  .si-amber {
+    background: var(--nab-amber-light);
+  }
+
+  .si-amber svg {
+    color: var(--nab-amber);
+  }
+
+  .si-teal {
+    background: var(--nab-teal-light);
+  }
+
+  .si-teal svg {
+    color: var(--nab-teal);
+  }
+
+  /* ── Grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    background: var(--nab-surface);
+    border-radius: 14px;
+    padding: 22px;
+    border: 1px solid var(--nab-border);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--nab-text);
+  }
+
+  .card-action {
+    font-size: 12px;
+    color: var(--nab-blue);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* ── Accounts ── */
+  .account-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--nab-border);
+  }
+
+  .account-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .acct-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .acct-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .acct-info {
+    flex: 1;
+  }
+
+  .acct-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--nab-text);
+  }
+
+  .acct-num {
+    font-size: 11px;
+    color: var(--nab-text-3);
+    font-family: var(--fm);
+  }
+
+  .acct-balance {
+    text-align: right;
+  }
+
+  .acct-amount {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--nab-text);
+    font-family: var(--fm);
+  }
+
+  .acct-avail {
+    font-size: 11px;
+    color: var(--nab-text-3);
+  }
+
+  /* ── Transactions ── */
+  .txn-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--nab-border);
+  }
+
+  .txn-item:last-child {
+    border-bottom: none;
+  }
+
+  .txn-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .txn-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .txn-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--nab-text);
+  }
+
+  .txn-meta {
+    font-size: 11px;
+    color: var(--nab-text-3);
+  }
+
+  .txn-amount {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--fm);
+    text-align: right;
+  }
+
+  .txn-amount.debit {
+    color: var(--nab-text);
+  }
+
+  .txn-amount.credit {
+    color: var(--nab-green);
+  }
+
+  .txn-card {
+    font-size: 10px;
+    color: var(--nab-text-3);
+    font-family: var(--fm);
+  }
+
+  /* ── Spending chart ── */
+  .spending-tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--nab-surface-2);
+    padding: 4px;
+    border-radius: 9px;
+    margin-bottom: 16px;
+  }
+
+  .spending-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--nab-text-3);
+  }
+
+  .spending-tab.active {
+    background: white;
+    color: var(--nab-blue);
+    border: 1px solid var(--nab-border);
+  }
+
+  /* ── Progress / Limits ── */
+  .limit-item {
+    margin-bottom: 16px;
+  }
+
+  .limit-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .limit-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .limit-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--nab-text);
+  }
+
+  .limit-vals {
+    font-size: 11px;
+    color: var(--nab-text-3);
+    font-family: var(--fm);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--nab-surface-3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+
+  /* ── Quick actions ── */
+  .qaction-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .qaction {
+    background: var(--nab-surface-2);
+    border-radius: 11px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--nab-border);
+    transition: all 0.15s;
+  }
+
+  .qaction:hover {
+    background: var(--nab-blue-light);
+    border-color: var(--nab-blue-mid);
+  }
+
+  .qaction-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qaction-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .qaction-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--nab-text-2);
+  }
+
+  /* ── Notification strip ── */
+  .notif-strip {
+    background: var(--nab-amber-light);
+    border: 1px solid rgba(160, 90, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .notif-strip svg {
+    width: 18px;
+    height: 18px;
+    color: var(--nab-amber);
+    flex-shrink: 0;
+  }
+
+  .notif-strip p {
+    font-size: 12px;
+    color: var(--nab-amber);
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .notif-strip button {
+    font-size: 11px;
+    color: var(--nab-amber);
+    background: none;
+    border: 1px solid rgba(160, 90, 0, 0.3);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: var(--ff);
+    font-weight: 600;
+  }
+
+  /* ── Transfer Flow Indicator ── */
+  .saga-strip {
+    background: var(--nab-blue-light);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    border: 1px solid var(--nab-blue-mid);
+  }
+
+  .saga-label {
+    font-size: 11px;
+    color: var(--nab-blue-deep);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .saga-steps {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .saga-step {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .saga-step.done {
+    background: var(--nab-blue-deep);
+    color: white;
+  }
+
+  .saga-step.active {
+    background: var(--nab-blue);
+    color: white;
+  }
+
+  .saga-step.pending {
+    background: rgba(0, 80, 200, 0.12);
+    color: var(--nab-blue);
+  }
+
+  .saga-sep {
+    width: 16px;
+    height: 1px;
+    background: var(--nab-blue-mid);
+    flex-shrink: 0;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+  }
+</style>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-star">
+          <svg viewBox="0 0 20 20">
+            <path d="M10 2l2.4 5.1 5.6.8-4 4 .9 5.5L10 15 5.1 17.4 6 11.9l-4-4 5.6-.8z" />
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">FinTrust</div>
+          <div class="logo-sub">Retail Banking</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-info">
+        <div class="user-avatar">SA</div>
+        <div>
+          <div class="user-name">Sarah Abbott</div>
+          <div class="user-tier">FinTrust Advantage</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Overview
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <path d="M2 10h20" />
+        </svg>
+        Accounts
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Transfer <span class="nav-badge">New</span>
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Transactions
+      </div>
+      <div class="nav-section">Financial</div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        Investments
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        Home Loans
+      </div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M9 14s-4 0-4-4 4-4 4-4h6s4 0 4 4-4 4-4 4H9zM9 14v2a2 2 0 002 2h2a2 2 0 002-2v-2" />
+        </svg>
+        Insurance
+      </div>
+      <div class="nav-section">Settings</div>
+      <div class="nav-item">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+        Settings
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="upgrade-card">
+        <p>Unlock premium insights & concierge support with FinTrust Pro</p>
+        <button class="upgrade-btn">Upgrade to Pro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="page-title">Good morning, Sarah</span>
+        <span class="date-badge">Friday, 20 Mar 2026</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-btn notif-dot">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+          </svg>
+        </div>
+        <div class="topbar-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </div>
+        <button class="transfer-btn">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          New Transfer
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- In-flight saga -->
+      <div class="saga-strip">
+        <div class="saga-label">Transfer TRF-20260320-004812 · $2,500.00 AUD · in progress</div>
+        <div class="saga-steps">
+          <div class="saga-step done">Initiated</div>
+          <div class="saga-sep"></div>
+          <div class="saga-step done">Risk scored</div>
+          <div class="saga-sep"></div>
+          <div class="saga-step done">Validated</div>
+          <div class="saga-sep"></div>
+          <div class="saga-step active">Debiting</div>
+          <div class="saga-sep"></div>
+          <div class="saga-step pending">Crediting</div>
+          <div class="saga-sep"></div>
+          <div class="saga-step pending">Complete</div>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div class="notif-strip">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <p>Your home loan fixed rate expires in 28 days. Lock in a new rate before 17 April to avoid the variable
+          rollover.</p>
+        <button>View offer</button>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon si-blue">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+            </svg>
+          </div>
+          <div class="stat-label">Total balance</div>
+          <div class="stat-value">$84,920</div>
+          <div class="stat-change up">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+            +$3,240 this month
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-green">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" />
+            </svg>
+          </div>
+          <div class="stat-label">Income (Mar)</div>
+          <div class="stat-value">$9,750</div>
+          <div class="stat-change up">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+            +7% vs Feb
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-amber">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <path d="M2 10h20" />
+            </svg>
+          </div>
+          <div class="stat-label">Spending (Mar)</div>
+          <div class="stat-value">$4,182</div>
+          <div class="stat-change down">
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            +$612 vs budget
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-teal">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div class="stat-label">Savings rate</div>
+          <div class="stat-value">57%</div>
+          <div class="stat-change neutral">
+            On track this month
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card" style="margin-bottom: 18px;">
+        <div class="card-header">
+          <span class="card-title">Quick actions</span>
+        </div>
+        <div class="qaction-grid">
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-blue-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-blue)">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </div>
+            <div class="qaction-label">Transfer</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-green-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-green)">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg>
+            </div>
+            <div class="qaction-label">Pay bill</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-teal-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-teal)">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M2 10h20" />
+              </svg>
+            </div>
+            <div class="qaction-label">Cards</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-amber-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-amber)">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
+            <div class="qaction-label">Schedule</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-blue-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-blue)">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+              </svg>
+            </div>
+            <div class="qaction-label">PayID</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-green-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-green)">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="qaction-label">Home loan</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: var(--nab-teal-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-teal)">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                <polyline points="16 7 22 7 22 13" />
+              </svg>
+            </div>
+            <div class="qaction-label">Invest</div>
+          </div>
+          <div class="qaction">
+            <div class="qaction-icon" style="background: rgba(100,100,130,0.1);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" color="var(--nab-text-2)">
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="19" cy="12" r="1" />
+                <circle cx="5" cy="12" r="1" />
+              </svg>
+            </div>
+            <div class="qaction-label">More</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row: Accounts + Spending -->
+      <div class="grid-2">
+        <!-- Accounts -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">My accounts</span>
+            <span class="card-action">Manage →</span>
+          </div>
+          <div class="account-item">
+            <div class="acct-icon" style="background: var(--nab-blue-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="var(--nab-blue)" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div class="acct-info">
+              <div class="acct-name">Everyday Cheque</div>
+              <div class="acct-num">ACC-● ● ● 8812</div>
+            </div>
+            <div class="acct-balance">
+              <div class="acct-amount">$12,450.00</div>
+              <div class="acct-avail">Avail. $11,950.00</div>
+            </div>
+          </div>
+          <div class="account-item">
+            <div class="acct-icon" style="background: var(--nab-green-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="var(--nab-green)" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg>
+            </div>
+            <div class="acct-info">
+              <div class="acct-name">iSaver Account</div>
+              <div class="acct-num">ACC-● ● ● 3341</div>
+            </div>
+            <div class="acct-balance">
+              <div class="acct-amount">$48,200.00</div>
+              <div class="acct-avail">4.65% p.a.</div>
+            </div>
+          </div>
+          <div class="account-item">
+            <div class="acct-icon" style="background: var(--nab-teal-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="var(--nab-teal)" stroke-width="2">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M2 10h20" />
+              </svg>
+            </div>
+            <div class="acct-info">
+              <div class="acct-name">FinTrust Rewards Visa</div>
+              <div class="acct-num">**** **** **** 4432</div>
+            </div>
+            <div class="acct-balance">
+              <div class="acct-amount" style="color: var(--nab-red);">-$3,820.00</div>
+              <div class="acct-avail">Limit $15,000</div>
+            </div>
+          </div>
+          <div class="account-item">
+            <div class="acct-icon" style="background: var(--nab-amber-light);">
+              <svg fill="none" viewBox="0 0 24 24" stroke="var(--nab-amber)" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <div class="acct-info">
+              <div class="acct-name">Home Loan Variable</div>
+              <div class="acct-num">ACC-● ● ● 0094</div>
+            </div>
+            <div class="acct-balance">
+              <div class="acct-amount" style="color: var(--nab-text-2);">$284,100</div>
+              <div class="acct-avail">6.24% p.a.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spending breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Spending (March)</span>
+            <span class="card-action">Details →</span>
+          </div>
+          <div class="spending-tabs">
+            <div class="spending-tab active" id="tab-month" onclick="switchTab('month')">This month</div>
+            <div class="spending-tab" id="tab-quarter" onclick="switchTab('quarter')">Quarter</div>
+            <div class="spending-tab" id="tab-year" onclick="switchTab('year')">Year</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="spendingChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row: Transactions + Limits -->
+      <div class="grid-3">
+        <!-- Transactions -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent transactions</span>
+            <span class="card-action">View all →</span>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#E3F2FD; color:#1565C0;">W</div>
+            <div class="txn-info">
+              <div class="txn-name">Woolworths Supermarkets</div>
+              <div class="txn-meta">Today, 9:41 AM · Groceries</div>
+            </div>
+            <div>
+              <div class="txn-amount debit">-$143.80</div>
+              <div class="txn-card">*4432</div>
+            </div>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#E8F5E9; color:#2E7D32;">S</div>
+            <div class="txn-info">
+              <div class="txn-name">Salary — Acme Corp</div>
+              <div class="txn-meta">Yesterday · Direct credit</div>
+            </div>
+            <div>
+              <div class="txn-amount credit">+$6,250.00</div>
+              <div class="txn-card">*8812</div>
+            </div>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#F3E5F5; color:#7B1FA2;">N</div>
+            <div class="txn-info">
+              <div class="txn-name">Netflix</div>
+              <div class="txn-meta">18 Mar · Subscription</div>
+            </div>
+            <div>
+              <div class="txn-amount debit">-$22.99</div>
+              <div class="txn-card">*4432</div>
+            </div>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#FFF3E0; color:#E65100;">A</div>
+            <div class="txn-info">
+              <div class="txn-name">AGL Energy</div>
+              <div class="txn-meta">17 Mar · Utilities</div>
+            </div>
+            <div>
+              <div class="txn-amount debit">-$310.00</div>
+              <div class="txn-card">*8812</div>
+            </div>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#E0F2F1; color:#00695C;">T</div>
+            <div class="txn-info">
+              <div class="txn-name">Transfer received · James A.</div>
+              <div class="txn-meta">16 Mar · PayID</div>
+            </div>
+            <div>
+              <div class="txn-amount credit">+$500.00</div>
+              <div class="txn-card">*8812</div>
+            </div>
+          </div>
+          <div class="txn-item">
+            <div class="txn-logo" style="background:#FCE4EC; color:#C62828;">U</div>
+            <div class="txn-info">
+              <div class="txn-name">Uber Eats</div>
+              <div class="txn-meta">15 Mar · Dining</div>
+            </div>
+            <div>
+              <div class="txn-amount debit">-$48.50</div>
+              <div class="txn-card">*4432</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Limits & savings goals -->
+        <div>
+          <div class="card" style="margin-bottom: 16px;">
+            <div class="card-header">
+              <span class="card-title">Transfer limits</span>
+              <span class="card-action" style="font-size:11px;">Edit</span>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">Daily limit</span>
+                <span class="limit-vals">$28,500 / $50,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:57%; background: var(--nab-blue);"></div>
+              </div>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">Monthly limit</span>
+                <span class="limit-vals">$62,100 / $200,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:31%; background: var(--nab-teal);"></div>
+              </div>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">Overseas transfers</span>
+                <span class="limit-vals">$8,000 / $20,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:40%; background: var(--nab-amber);"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Savings goals</span>
+              <span class="card-action" style="font-size:11px;">+ Add</span>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">Europe holiday 2027</span>
+                <span class="limit-vals">$8,200 / $15,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:55%; background: var(--nab-blue);"></div>
+              </div>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">Emergency fund</span>
+                <span class="limit-vals">$20,000 / $20,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:100%; background: var(--nab-green);"></div>
+              </div>
+            </div>
+            <div class="limit-item">
+              <div class="limit-top">
+                <span class="limit-name">New car deposit</span>
+                <span class="limit-vals">$3,600 / $12,000</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:30%; background: var(--nab-amber);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  const monthData = {
+    labels: ['Groceries', 'Dining', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other'],
+    data: [820, 380, 290, 540, 210, 640, 180, 122],
+    colors: ['#0050C8', '#007A73', '#1A7A3C', '#A05A00', '#185FA5', '#CC0000', '#3B6D11', '#8585A3']
+  };
+  const quarterData = {
+    labels: ['Groceries', 'Dining', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other'],
+    data: [2410, 1050, 870, 1620, 580, 1940, 430, 340],
+    colors: monthData.colors
+  };
+  const yearData = {
+    labels: ['Groceries', 'Dining', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Other'],
+    data: [9840, 4200, 3480, 6480, 2320, 7760, 1720, 1360],
+    colors: monthData.colors
+  };
+
+  let spendingChart;
+  function buildChart(d) {
+    if (spendingChart) spendingChart.destroy();
+    spendingChart = new Chart(document.getElementById('spendingChart'), {
+      type: 'doughnut',
+      data: {
+        labels: d.labels,
+        datasets: [{ data: d.data, backgroundColor: d.colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' $' + ctx.parsed.toLocaleString()
+            }
+          }
+        }
+      }
+    });
+  }
+  buildChart(monthData);
+
+  function switchTab(t) {
+    ['month', 'quarter', 'year'].forEach(id => {
+      document.getElementById('tab-' + id).classList.toggle('active', id === t);
+    });
+    if (t === 'month') buildChart(monthData);
+    else if (t === 'quarter') buildChart(quarterData);
+    else buildChart(yearData);
+  }
+</script>

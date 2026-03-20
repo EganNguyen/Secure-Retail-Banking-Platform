@@ -65,8 +65,19 @@ public class TransferAggregate extends AggregateRoot {
         return aggregate;
     }
 
-    public void markValidated(String correlationId, String causationId) {
+    public void markRiskScored(String correlationId, String causationId) {
         requireStatus(TransferStatus.INITIATED);
+        apply(new TransferRiskScoredEvent(
+                UUID.randomUUID(),
+                Instant.now(clock),
+                correlationId,
+                causationId,
+                transferId.value()
+        ));
+    }
+
+    public void markValidated(String correlationId, String causationId) {
+        requireStatus(TransferStatus.RISK_SCORED);
         apply(new TransferValidatedEvent(
                 UUID.randomUUID(),
                 Instant.now(clock),
@@ -76,20 +87,41 @@ public class TransferAggregate extends AggregateRoot {
         ));
     }
 
-    public void markLedgerPosted(String ledgerReference, String correlationId, String causationId) {
+    public void reserveDebit(String correlationId, String causationId) {
         requireStatus(TransferStatus.VALIDATED);
-        apply(new TransferLedgerPostedEvent(
+        apply(new TransferDebitReservedEvent(
                 UUID.randomUUID(),
                 Instant.now(clock),
                 correlationId,
                 causationId,
-                transferId.value(),
-                ledgerReference
+                transferId.value()
+        ));
+    }
+
+    public void markDebited(String correlationId, String causationId) {
+        requireStatus(TransferStatus.DEBIT_RESERVED);
+        apply(new TransferDebitedEvent(
+                UUID.randomUUID(),
+                Instant.now(clock),
+                correlationId,
+                causationId,
+                transferId.value()
+        ));
+    }
+
+    public void markCredited(String correlationId, String causationId) {
+        requireStatus(TransferStatus.DEBITED);
+        apply(new TransferCreditedEvent(
+                UUID.randomUUID(),
+                Instant.now(clock),
+                correlationId,
+                causationId,
+                transferId.value()
         ));
     }
 
     public void complete(String correlationId, String causationId) {
-        requireStatus(TransferStatus.LEDGER_POSTED);
+        requireStatus(TransferStatus.CREDITED);
         apply(new TransferCompletedEvent(
                 UUID.randomUUID(),
                 Instant.now(clock),
@@ -114,6 +146,20 @@ public class TransferAggregate extends AggregateRoot {
         ));
     }
 
+    public void reverse(String reason, String correlationId, String causationId) {
+        if (status != TransferStatus.FAILED && status != TransferStatus.CREDITED && status != TransferStatus.DEBITED) {
+            throw new InvalidTransferStateException("Can only reverse transfers that have at least debited funds.");
+        }
+        apply(new TransferReversedEvent(
+                UUID.randomUUID(),
+                Instant.now(clock),
+                correlationId,
+                causationId,
+                transferId.value(),
+                reason
+        ));
+    }
+
     private void requireStatus(TransferStatus expected) {
         if (status != expected) {
             throw new InvalidTransferStateException("Expected status " + expected + " but was " + status);
@@ -133,17 +179,24 @@ public class TransferAggregate extends AggregateRoot {
             this.ledgerReference = null;
             this.failureReason = null;
             this.failureDetail = null;
+        } else if (event instanceof TransferRiskScoredEvent) {
+            this.status = TransferStatus.RISK_SCORED;
         } else if (event instanceof TransferValidatedEvent) {
             this.status = TransferStatus.VALIDATED;
-        } else if (event instanceof TransferLedgerPostedEvent posted) {
-            this.status = TransferStatus.LEDGER_POSTED;
-            this.ledgerReference = posted.ledgerReference();
+        } else if (event instanceof TransferDebitReservedEvent) {
+            this.status = TransferStatus.DEBIT_RESERVED;
+        } else if (event instanceof TransferDebitedEvent) {
+            this.status = TransferStatus.DEBITED;
+        } else if (event instanceof TransferCreditedEvent) {
+            this.status = TransferStatus.CREDITED;
         } else if (event instanceof TransferCompletedEvent) {
             this.status = TransferStatus.COMPLETED;
         } else if (event instanceof TransferFailedEvent failed) {
             this.status = TransferStatus.FAILED;
             this.failureReason = failed.reason();
             this.failureDetail = failed.detail();
+        } else if (event instanceof TransferReversedEvent) {
+            this.status = TransferStatus.REVERSED;
         } else {
             throw new IllegalArgumentException("Unsupported event: " + event.getClass().getSimpleName());
         }

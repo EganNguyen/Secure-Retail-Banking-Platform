@@ -8,8 +8,13 @@ import com.bank.sharedkernel.domain.DomainEvent;
 import com.bank.transfer.domain.TransferCompletedEvent;
 import com.bank.transfer.domain.TransferFailedEvent;
 import com.bank.transfer.domain.TransferInitiatedEvent;
-import com.bank.transfer.domain.TransferLedgerPostedEvent;
+import com.bank.transfer.domain.TransferRiskScoredEvent;
 import com.bank.transfer.domain.TransferValidatedEvent;
+import com.bank.transfer.domain.TransferDebitReservedEvent;
+import com.bank.transfer.domain.TransferDebitedEvent;
+import com.bank.transfer.domain.TransferCreditedEvent;
+import com.bank.transfer.domain.TransferReversedEvent;
+import com.bank.transfer.domain.TransferLedgerPostedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -26,11 +31,17 @@ public class DomainEventSerializer {
         register("AccountFrozenEvent", AccountFrozenEvent.class);
         register("AccountUnfrozenEvent", AccountUnfrozenEvent.class);
         register("AccountClosedEvent", AccountClosedEvent.class);
+        
         register("TransferInitiatedEvent", TransferInitiatedEvent.class);
+        register("TransferRiskScoredEvent", TransferRiskScoredEvent.class);
         register("TransferValidatedEvent", TransferValidatedEvent.class);
-        register("TransferLedgerPostedEvent", TransferLedgerPostedEvent.class);
+        register("TransferDebitReservedEvent", TransferDebitReservedEvent.class);
+        register("TransferDebitedEvent", TransferDebitedEvent.class);
+        register("TransferCreditedEvent", TransferCreditedEvent.class);
         register("TransferCompletedEvent", TransferCompletedEvent.class);
         register("TransferFailedEvent", TransferFailedEvent.class);
+        register("TransferReversedEvent", TransferReversedEvent.class);
+        register("TransferLedgerPostedEvent", TransferLedgerPostedEvent.class);
     }
 
     private void register(String type, Class<? extends DomainEvent> clazz) {

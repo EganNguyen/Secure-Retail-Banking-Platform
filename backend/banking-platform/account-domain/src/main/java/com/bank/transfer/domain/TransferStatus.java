@@ -2,8 +2,12 @@ package com.bank.transfer.domain;
 
 public enum TransferStatus {
     INITIATED,
+    RISK_SCORED,
     VALIDATED,
-    LEDGER_POSTED,
+    DEBIT_RESERVED,
+    DEBITED,
+    CREDITED,
     COMPLETED,
-    FAILED
+    FAILED,
+    REVERSED
 }

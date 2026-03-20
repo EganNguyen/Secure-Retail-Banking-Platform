@@ -99,9 +99,12 @@ docker run -p 3000:3000 nextjs-app
 
 ### 🟢 Unit & Integration Tests
 - **Unit Tests**: Focus on domain logic within Aggregates.
+  ```bash
+  mvn test -pl account-domain
+  ```
 - **Integration Tests**: Verify persistence and Kafka messaging using **Testcontainers**.
   ```bash
-  mvn test -pl account-service
+  mvn test -pl account-service -Dtest=AccountControllerIT,TransferControllerIT
   ```
 
 ### 🎭 End-to-End (E2E) Testing

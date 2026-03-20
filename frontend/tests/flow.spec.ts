@@ -10,7 +10,7 @@ test.describe('Retail Banking Platform E2E Flow', () => {
 
     // 2. Login via Keycloak
     page.on('dialog', dialog => console.log(`[DIALOG] ${dialog.message()}`));
-    await page.click('text=Log In via Keycloak');
+    await page.getByRole('button', { name: 'Log In' }).click();
     await page.waitForSelector('#username');
     await page.fill('#username', 'egan');
     await page.fill('#password', 'password123');
@@ -29,8 +29,8 @@ test.describe('Retail Banking Platform E2E Flow', () => {
 
     // 3. Verify Dashboard is fully hydrated (not just URL-matched)
     await page.waitForURL('http://localhost:3000/dashboard');
-    await expect(page.locator('h1.text-3xl'))
-      .toContainText(/Welcome back!|Dashboard/i, { timeout: 15_000 });
+    await expect(page.locator('h2'))
+      .toContainText(/Financial Overview/i, { timeout: 15_000 });
 
     // 4. Open Checking Account
     await page.getByRole('button', { name: /open.*account/i }).first().click();
@@ -49,8 +49,8 @@ test.describe('Retail Banking Platform E2E Flow', () => {
     await page.click('text=Go to Dashboard');
     await page.waitForURL('http://localhost:3000/dashboard');
     // Wait for full hydration before triggering next navigation
-    await expect(page.locator('h1.text-3xl'))
-      .toContainText(/Welcome back!|Dashboard/i, { timeout: 15_000 });
+    await expect(page.locator('h2'))
+      .toContainText(/Financial Overview/i, { timeout: 15_000 });
 
     await page.getByRole('button', { name: /open.*account/i }).first().click();
     await page.waitForURL('http://localhost:3000/accounts/new');
@@ -71,8 +71,8 @@ test.describe('Retail Banking Platform E2E Flow', () => {
     //    Strategy: wait for the heading first (proves auth is settled),
     //    then poll for account visibility using waitForSelector instead of
     //    page.reload() — avoids the Keycloak re-init race entirely.
-    await expect(page.locator('h1.text-3xl'))
-      .toContainText(/Welcome back!|Dashboard/i, { timeout: 15_000 });
+    await expect(page.locator('h2'))
+      .toContainText(/Financial Overview/i, { timeout: 15_000 });
 
     for (const [label, id] of [
       ['Checking', checkingAccountId],
@@ -85,8 +85,8 @@ test.describe('Retail Banking Platform E2E Flow', () => {
         // Safe reload: trigger refetch but wait for hydration to avoid stalling on init screen
         if (i > 0) {
           await page.reload();
-          await expect(page.locator('h1.text-3xl'))
-            .toContainText(/Welcome back!|Dashboard/i, { timeout: 15_000 });
+          await expect(page.locator('h2'))
+            .toContainText(/Financial Overview/i, { timeout: 15_000 });
         }
 
         const isPresent = await page.evaluate((sid) => document.body.innerText.includes(sid), shortId);

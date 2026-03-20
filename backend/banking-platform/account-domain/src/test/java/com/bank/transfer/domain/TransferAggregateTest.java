@@ -28,12 +28,14 @@ class TransferAggregateTest {
                 "corr-1"
         );
 
+        aggregate.markRiskScored("corr-1", "caus-1");
         aggregate.markValidated("corr-1", "caus-1");
-        aggregate.markLedgerPosted("LEDGER-1", "corr-1", "caus-1");
+        aggregate.reserveDebit("corr-1", "caus-1");
+        aggregate.markDebited("corr-1", "caus-1");
+        aggregate.markCredited("corr-1", "caus-1");
         aggregate.complete("corr-1", "caus-1");
 
         assertEquals(TransferStatus.COMPLETED, aggregate.getStatus());
-        assertEquals("LEDGER-1", aggregate.getLedgerReference());
     }
 
     // -----------------------------------------------------------------------
@@ -73,14 +75,16 @@ class TransferAggregateTest {
         assertThat(aggregate.getStatus()).isEqualTo(TransferStatus.FAILED);
         assertThat(aggregate.getFailureReason()).isEqualTo(TransferFailureReason.INSUFFICIENT_FUNDS);
         assertThat(aggregate.getFailureDetail()).isEqualTo("Balance too low");
-        assertThat(aggregate.getLedgerReference()).isNull();
     }
 
     @Test
     void shouldRejectFailWhenAlreadyCompleted() {
         TransferAggregate aggregate = initiate();
+        aggregate.markRiskScored("corr-5", "caus-5");
         aggregate.markValidated("corr-5", "caus-5");
-        aggregate.markLedgerPosted("LEDGER-X", "corr-5", "caus-5");
+        aggregate.reserveDebit("corr-5", "caus-5");
+        aggregate.markDebited("corr-5", "caus-5");
+        aggregate.markCredited("corr-5", "caus-5");
         aggregate.complete("corr-5", "caus-5");
 
         assertThatThrownBy(() ->
@@ -93,28 +97,26 @@ class TransferAggregateTest {
     // -----------------------------------------------------------------------
 
     @Test
-    void shouldRejectMarkValidatedWhenNotInitiated() {
+    void shouldRejectMarkValidatedWhenNotRiskScored() {
         TransferAggregate aggregate = initiate();
-        aggregate.markValidated("corr-7", "caus-7");
 
-        // Already VALIDATED – calling again must throw
         assertThatThrownBy(() -> aggregate.markValidated("corr-7b", "caus-7b"))
                 .isInstanceOf(InvalidTransferStateException.class);
     }
 
     @Test
-    void shouldRejectMarkLedgerPostedWhenNotValidated() {
-        TransferAggregate aggregate = initiate(); // status = INITIATED
+    void shouldRejectMarkDebitedWhenNotReserved() {
+        TransferAggregate aggregate = initiate();
 
-        assertThatThrownBy(() -> aggregate.markLedgerPosted("LEDGER-Y", "corr-8", "caus-8"))
+        assertThatThrownBy(() -> aggregate.markDebited("corr-8", "caus-8"))
                 .isInstanceOf(InvalidTransferStateException.class);
     }
 
     @Test
-    void shouldRejectCompleteWhenNotLedgerPosted() {
+    void shouldRejectCompleteWhenNotCredited() {
         TransferAggregate aggregate = initiate();
+        aggregate.markRiskScored("corr-9", "caus-9");
         aggregate.markValidated("corr-9", "caus-9");
-        // status = VALIDATED, not LEDGER_POSTED
 
         assertThatThrownBy(() -> aggregate.complete("corr-9b", "caus-9b"))
                 .isInstanceOf(InvalidTransferStateException.class);

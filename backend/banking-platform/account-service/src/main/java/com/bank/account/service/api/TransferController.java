@@ -1,7 +1,7 @@
 package com.bank.account.service.api;
 
+import com.bank.transfer.application.TransferCommandService;
 import com.bank.transfer.application.TransferQueryService;
-import com.bank.transfer.application.TransferSagaOrchestrator;
 import com.bank.transfer.application.command.CreateTransferCommand;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,22 +23,23 @@ import static com.bank.account.service.api.TransferResponses.TransferResponse;
 @RestController
 @RequestMapping("/api/v1")
 public class TransferController {
-    private final TransferSagaOrchestrator orchestrator;
+    private final TransferCommandService commandService;
     private final TransferQueryService queryService;
 
-    public TransferController(TransferSagaOrchestrator orchestrator, TransferQueryService queryService) {
-        this.orchestrator = orchestrator;
+    public TransferController(TransferCommandService commandService, TransferQueryService queryService) {
+        this.commandService = commandService;
         this.queryService = queryService;
     }
 
     @PostMapping("/transfers")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public TransferResponse createInternalTransfer(@Valid @RequestBody CreateInternalTransferRequest request,
+                                                   @RequestHeader("X-Idempotency-Key") String idempotencyKey,
                                                    @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
                                                    @RequestHeader(value = "X-Causation-ID", required = false) String causationId) {
         String resolvedCorrelationId = correlationId != null ? correlationId : UUID.randomUUID().toString();
         String resolvedCausationId = causationId != null ? causationId : resolvedCorrelationId;
-        return TransferResponse.from(orchestrator.initiateInternalTransfer(new CreateTransferCommand(
+        com.bank.transfer.domain.TransferAggregate aggregate = commandService.initiateTransfer(new CreateTransferCommand(
                 request.sourceAccountId(),
                 request.destinationAccountId(),
                 request.beneficiaryName(),
@@ -47,7 +48,23 @@ public class TransferController {
                 request.reference(),
                 resolvedCorrelationId,
                 resolvedCausationId
-        )));
+        ));
+        
+        return new TransferResponse(
+                aggregate.getTransferId().value(),
+                aggregate.getSourceAccountId(),
+                aggregate.getDestinationAccountId(),
+                aggregate.getBeneficiaryName(),
+                aggregate.getAmount().amount(),
+                aggregate.getAmount().currency(),
+                aggregate.getReference(),
+                aggregate.getStatus(),
+                aggregate.getLedgerReference(),
+                aggregate.getFailureReason(),
+                aggregate.getFailureDetail(),
+                java.time.Instant.now(),
+                java.time.Instant.now()
+        );
     }
 
     @GetMapping("/transfers/{transferId}")

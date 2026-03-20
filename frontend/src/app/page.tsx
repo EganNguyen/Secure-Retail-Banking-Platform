@@ -28,14 +28,14 @@ export default function LandingPage() {
         <div className="mb-8 flex justify-center w-20 h-20 rounded-2xl bg-[var(--primary)]/10 text-[var(--primary)] items-center shadow-lg border border-[var(--primary)]/20">
           <ShieldCheck size={40} />
         </div>
-        
+
         <h1 className="text-4xl font-bold tracking-tight text-[var(--foreground)] sm:text-6xl">
           Secure Retail Banking
         </h1>
         <p className="mt-6 text-lg leading-8 text-[var(--foreground)] opacity-70 max-w-2xl">
           Experience next-generation banking. Open secure checking and savings accounts, execute seamless internal transfers, and manage your wealth from a premium dashboard.
         </p>
-        
+
         <div className="mt-10 flex items-center justify-center gap-x-6">
           <Button onClick={login} size="lg" className="rounded-full px-8 text-lg font-semibold shadow-xl shadow-[var(--primary)]/20">
             Log In via Keycloak <ArrowRight className="ml-2 h-5 w-5" />
