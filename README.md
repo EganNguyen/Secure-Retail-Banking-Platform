@@ -86,6 +86,9 @@ docker-compose up -d
 The frontend is a Next.js application that can be run containerized for production parity:
 
 ```bash
+# Run the frontend
+npm run dev
+
 # Build the frontend image
 docker build -t nextjs-app ./frontend
 
