@@ -7,11 +7,14 @@ test.describe.serial('Retail Banking Platform E2E Flow', () => {
   let savingsAccountId: string;
 
   test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+    const context = await browser.newContext({
+      recordVideo: { dir: 'test-results/videos/' }
+    });
+    page = await context.newPage();
   });
 
   test.afterAll(async () => {
-    await page.close();
+    await page.context().close();
   });
 
   test('1. Login via Keycloak', async () => {
@@ -148,10 +151,6 @@ test.describe.serial('Retail Banking Platform E2E Flow', () => {
     page.on('response', async response => {
       if (response.url().includes('/transfer') || response.url().includes('/payment') || response.url().includes('/balance')) {
         console.log(`[TRANSFER RESPONSE] ${response.status()} ${response.url()}`);
-        try {
-          const body = await response.text();
-          if (body) console.log('[TRANSFER BODY]', body.slice(0, 500));
-        } catch (e) { }
       }
     });
 

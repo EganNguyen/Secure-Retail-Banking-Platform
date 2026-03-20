@@ -127,6 +127,8 @@ npx playwright test tests/flow.spec.ts
 npx playwright test tests/flow.spec.ts --headed
 ```
 
+<video controls src="frontend/test-results/videos/0bf370144381df6bc26c2e25c38d7fd0.webm" title="Title"></video>
+
 ---
 
 ## 🗺️ Roadmap
