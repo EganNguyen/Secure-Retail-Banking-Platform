@@ -127,7 +127,7 @@ npx playwright test tests/flow.spec.ts
 npx playwright test tests/flow.spec.ts --headed
 ```
 
-[▶️ Watch Demo](frontend/test-results/videos/0bf370144381df6bc26c2e25c38d7fd0.webm)
+[▶️ Watch E2E Test Video](frontend/test-results/videos/0bf370144381df6bc26c2e25c38d7fd0.webm)
 
 ---
 
